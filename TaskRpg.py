@@ -1,77 +1,76 @@
-
-
 class Player:
-    def __init__(self, level, xp, coins, xpmult, coinmult):
+    def __init__(self, level, xp, coins, xp_mult, coin_mult):
         self.level = level
         self.xp = xp
         self.coins = coins
-        self.xp_mult = xpmult
-        self.coin_mult = coinmult
+        self.xp_mult = xp_mult
+        self.coin_mult = coin_mult
         self.max_xp = 10
-        
-    def gainxp(self, xp, silent = False):
+
+    def gain_xp(self, xp, silent=False):
         gain = 0
         if silent:
             gain = xp
         else:
             gain = xp * self.xp_mult
-            print(f'parabens, vc ganhou {gain} de xp!')
+            print(f'congrats, you gained {gain} xp!')
         self.xp += gain
-        
+
         while self.xp >= self.max_xp:
             self.xp -= self.max_xp
             self.level += 1
             self.max_xp = self.level * 10
             print("level up!")
 
-        
-    def gaincoins (self, coins):
+    def gain_coins(self, coins):
         self.coins += coins * self.coin_mult
-        print(f"parabens, voce ganhou {coins} moedas\nquantidade de moedas: {self.coins}")
-    
-    def show(self, tasklist):
+        print(f"congrats, you gained {coins} coins\ncoin amount: {self.coins}")
+
+    def show(self, task_list):
         print('==================================\n'
-        f'xp - {self.xp} / {self.max_xp}\n'
-        f'moedas - {self.coins}\n'
-        f'multiplicador de xp - {self.xp_mult}\n'
-        f'multiplicador de moedas - {self.coin_mult}\n'
-        'tarefas pendentes:\n')
-        for item in tasklist:
-            print(f'tarefa: {item.name} - id: {item.id}')
+              f'xp - {self.xp} / {self.max_xp}\n'
+              f'coins - {self.coins}\n'
+              f'xp multiplier - {self.xp_mult}\n'
+              f'coin multiplier - {self.coin_mult}\n'
+              'pending tasks:\n')
+        for item in task_list:
+            print(f'task: {item.name} - id: {item.id}')
+
 
 class Shop:
     def __init__(self, products):
         self.products = products
+
     def buy(self, id, player):
         total_xp = player.xp
         for i in range(1, player.level):
-            total_xp += i *10
+            total_xp += i * 10
         player.xp = 0
         player.level = 1
         player.max_xp = 10
-        for i in self.products:
-            if i.id == id:
-                if i.value > player.coins or i.xp_value > total_xp:
-                    print('voce não tem dinheiro ou xp o suficiente para comprar esse produto')
-                elif i.kind == 'mult':
-                    player.xp_mult += i.xp_mult
-                    player.coin_mult += i.coin_mult
-                total_xp -= i.xp_value
-                player.coins -= i.value
-                player.gainxp(total_xp, True)
+        for product in self.products:
+            if product.id == id:
+                if product.value > player.coins or product.xp_value > total_xp:
+                    print('you do not have enough money or xp to buy this product')
+                elif product.kind == 'mult':
+                    player.xp_mult += product.xp_mult
+                    player.coin_mult += product.coin_mult
+                total_xp -= product.xp_value
+                player.coins -= product.value
+                player.gain_xp(total_xp, True)
                 break
-        
+
     def show(self):
         for product in self.products:
-            print('==================================\n' \
-                f'produto - {product.name}' \
-                f'preço em moedas - {product.value}' \
-                f'preço em xp - {product.xp_value}' \
-                f'descrição - {product.desc}' \
-                f'id - {product.id}' \
-                '==================================\n')
+            print('==================================\n'
+                  f'product - {product.name}'
+                  f'coin price - {product.value}'
+                  f'xp price - {product.xp_value}'
+                  f'description - {product.desc}'
+                  f'id - {product.id}'
+                  '==================================\n')
         while True:
-            ask = input('o que gostaria de comprar? (digite o id do produto para comprar e leave para sair da loja) ').lower()
+            ask = input('what would you like to buy? (type the product id to buy or leave to exit the shop) ').lower()
             if ask == 'leave':
                 break
             else:
@@ -88,85 +87,91 @@ class Product:
         self.xp_mult = xp_mult
         self.coin_mult = coin_mult
         self.kind = kind
+
+
 class Task:
     def __init__(self, name, dif, id):
         self.name = name
         self.dif = dif
         self.id = id
-tasklist = []
+
+
+task_list = []
 player = Player(1, 0, 0, 1, 1)
-shop = Shop([Product('multiplicador de xp', 30, 0, 'adiciona 0.5 ao seu multiplicador de xp', 1, 0.5, 0, 'mult'),
-             Product('multiplicador de moedas', 30, 10, 'adiciona 0.5 ao seu multiplicador de moedas', 2, 0, 0.5, 'mult'),
-             Product('multiplicador geral', 40, 30, 'adiciona 1 a ambos os multiplicadores', 3, 1, 1, 'mult'),
-             Product('30 minutos livres', 30, 30, 'te dá 30 minutos livres para fazer o que quiser', 4, 0, 0, 'mult')])
+shop = Shop([Product('xp multiplier', 30, 0, 'adds 0.5 to your xp multiplier', 1, 0.5, 0, 'mult'),
+             Product('coin multiplier', 30, 10, 'adds 0.5 to your coin multiplier', 2, 0, 0.5, 'mult'),
+             Product('general multiplier', 40, 30, 'adds 1 to both multipliers', 3, 1, 1, 'mult'),
+             Product('30 free minutes', 30, 30, 'gives you 30 free minutes to do whatever you want', 4, 0, 0, 'mult')])
 
-def Add_task(tasklist,):
+
+def add_task(task_list):
     id = 1
-    task = input('Que tarefa deseja adicionar? ')
-    dif = input('Qual a dificuldade? (facil, medio ou dificil) ')
-    while dif.lower() not in ['facil', 'medio', 'dificil']:
-        dif = input('Digite uma dificuldade valida')
-    for iten in tasklist:
+    task = input('What task would you like to add? ')
+    dif = input('What is the difficulty? (easy, medium or hard) ')
+    while dif.lower() not in ['easy', 'medium', 'hard']:
+        dif = input('Enter a valid difficulty ')
+    for item in task_list:
         id += 1
-    tasklist.append(Task(task, dif, id))
-    return tasklist
+    task_list.append(Task(task, dif, id))
+    return task_list
 
-def Rem_task(tasklist, taskid, player = player):
-    for i in tasklist:
-        if i.id == taskid:
-            match i.dif:
-                case 'facil':
-                    player.gainxp(2)
-                case 'medio':
-                    player.gainxp(4)
-                case 'dificil':
-                    player.gainxp(6)
+
+def remove_task(task_list, task_id, player=player):
+    for item in task_list:
+        if item.id == task_id:
+            match item.dif:
+                case 'easy':
+                    player.gain_xp(2)
+                case 'medium':
+                    player.gain_xp(4)
+                case 'hard':
+                    player.gain_xp(6)
                 case _:
-                    print('como diabos vc colocou uma dificuldade que não existe?')
-                    player.gainxp(-99999999)
-                    print('penalidade para vc n fazer isso de novo!')
-            tasklist.remove(i)
-            
-    
-    for i, task in enumerate(tasklist, start=1):
+                    print('how on earth did you set a difficulty that does not exist?')
+                    player.gain_xp(-99999999)
+                    print('penalty so you do not do that again!')
+            task_list.remove(item)
+
+    for i, task in enumerate(task_list, start=1):
         task.id = i
-    if tasklist == []:
-        print ('parabens! voce completou todas as tarefas!')
-        player.gainxp(4)
-    return tasklist
+    if task_list == []:
+        print('congrats! you completed all your tasks!')
+        player.gain_xp(4)
+    return task_list
+
 
 while True:
-    ask = input('O que deseja fazer? (digite help ou ? para ver os comandos): ')
+    ask = input('What would you like to do? (type help or ? to see the commands): ')
     match ask:
         case "help":
-            print('==================================\n' \
-                '"add" - adicionar tarefa\n' \
-                '"rem" - remover tarefa\n' \
-                '"shop" - abrir a loja\n' \
-                '"leave" - encerrar o programa\n' \
-                '"help" - mostrar essa mensagem\n' \
-                '"?" - mostrar essa mensagem' \
-                '==================================')
+            print('==================================\n'
+                  '"add" - add a task\n'
+                  '"rem" - remove a task\n'
+                  '"shop" - open the shop\n'
+                  '"leave" - end the program\n'
+                  '"help" - show this message\n'
+                  '"?" - show this message'
+                  '==================================')
         case "?":
-            print('==================================\n' \
-                '"add" - adicionar tarefa\n' \
-                '"rem" - remover tarefa\n' \
-                '"shop" - abrir a loja\n' \
-                '"show" - mostrar seus dados e lista de tarefas'
-                '"leave" - encerrar o programa\n' \
-                '"help" - mostrar essa mensagem\n' \
-                '"?" - mostrar essa mensagem' \
-                '==================================')
+            print('==================================\n'
+                  '"add" - add a task\n'
+                  '"rem" - remove a task\n'
+                  '"shop" - open the shop\n'
+                  '"show" - show your data and task list'
+                  '"leave" - end the program\n'
+                  '"help" - show this message\n'
+                  '"?" - show this message'
+                  '==================================')
         case 'add':
-            Add_task(tasklist)
+            add_task(task_list)
         case 'rem':
-            for item in tasklist:
-                print(f'tarefa: {item.name} - id: {item.id}')
-            which = input('digite o id da tarefa que deseja remover: ')
-            Rem_task(tasklist, int(which))
+            for item in task_list:
+                print(f'task: {item.name} - id: {item.id}')
+            which = input('enter the id of the task you want to remove: ')
+            remove_task(task_list, int(which))
         case 'shop':
             shop.show()
         case 'show':
-            player.show(tasklist)
+            player.show(task_list)
         case 'leave':
             break
